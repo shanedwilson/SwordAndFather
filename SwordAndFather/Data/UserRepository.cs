@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using Dapper;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -41,32 +42,16 @@ namespace SwordAndFather.Data
             throw new Exception("No user found");
         }
 
-        public List<User> GetAll()
+        public IEnumerable<User> GetAll()
         {
-            var users = new List<User>();
+            //var users = new List<User>();
 
-            var connection = new SqlConnection(ConnectionString);
-            connection.Open();
-
-            var getAllUsersCommand = connection.CreateCommand();
-            getAllUsersCommand.CommandText = @"select username,password,id
-                                               from users";
-
-            var reader = getAllUsersCommand.ExecuteReader();
-
-            while (reader.Read())
+            using (var db = new SqlConnection(ConnectionString))
             {
-                var id = (int)reader["Id"];
-                var username = reader["Username"].ToString();
-                var password = reader["Password"].ToString();
-                var user = new User(username, password) { Id = id };
+                db.Open();
 
-                users.Add(user);
+                return db.Query<User>("select username,password,id from users");
             }
-
-            connection.Close();
-
-            return users;
         }
     }
 }
