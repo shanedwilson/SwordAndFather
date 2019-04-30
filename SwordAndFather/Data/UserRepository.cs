@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using Dapper;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SwordAndFather.Data
 {
@@ -28,6 +26,19 @@ namespace SwordAndFather.Data
                 }
             }
             throw new Exception("No user created");
+        }
+
+        public void DeleteUser(int id)
+        {
+            using (var db = new SqlConnection(ConnectionString))
+            {
+               var rowsAffected =  db.Execute("Delete From Users Where Id = @id", new {id});
+
+                if (rowsAffected != 1)
+                {
+                    throw new Exception("That didn't work out.");
+                }
+            }
         }
 
         public IEnumerable<User> GetAll()
