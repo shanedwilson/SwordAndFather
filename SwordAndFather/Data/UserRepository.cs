@@ -41,6 +41,21 @@ namespace SwordAndFather.Data
             }
         }
 
+        public User UpdateUser(User userToUpdate)
+        {
+            using (var db = new SqlConnection(ConnectionString))
+            {
+                var rowsAffected = db.Execute(@"Update Users
+                             Set username = @username,
+                                 password = @password
+                             Where Id = @id", userToUpdate);
+
+                if (rowsAffected == 1)
+                    return userToUpdate;
+            }
+            throw new Exception("Could not update user");
+        }
+
         public IEnumerable<User> GetAll()
         {
             using (var db = new SqlConnection(ConnectionString))
