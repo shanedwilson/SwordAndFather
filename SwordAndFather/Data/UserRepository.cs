@@ -2,8 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
+using Dapper;
 
 namespace SwordAndFather.Data
 {
@@ -13,60 +12,58 @@ namespace SwordAndFather.Data
 
         public User AddUser(string username, string password)
         {
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var db = new SqlConnection(ConnectionString))
             {
-                connection.Open();
-                var insertUserCommand = connection.CreateCommand();
-                insertUserCommand.CommandText = $@"Insert into users (username, password)
-                                              Output inserted.*
-                                              Values(@username, @password)";
+                var newUser = db.QueryFirstOrDefault<User>(@"
+                    Insert into users (username, password)
+                    Output inserted.*
+                    Values(@username, @password)", 
+                    new {username, password });
 
-                insertUserCommand.Parameters.AddWithValue("username", username);
-                insertUserCommand.Parameters.AddWithValue("password", password);
-
-                var reader = insertUserCommand.ExecuteReader();
-
-                if (reader.Read())
+                if (newUser != null)
                 {
-                    var insertedPassword = reader["password"].ToString();
-                    var insertedUserName = reader["username"].ToString();
-                    var insertedId = (int)reader["Id"];
-
-                    var newUser = new User(insertedUserName, insertedPassword) { Id = insertedId };
-
                     return newUser;
                 }
             }
-
-            throw new Exception("No user found");
+            throw new Exception("No user created");
         }
 
-        public List<User> GetAll()
+        public void DeleteUser(int id)
         {
-            var users = new List<User>();
-
-            var connection = new SqlConnection(ConnectionString);
-            connection.Open();
-
-            var getAllUsersCommand = connection.CreateCommand();
-            getAllUsersCommand.CommandText = @"select username,password,id
-                                               from users";
-
-            var reader = getAllUsersCommand.ExecuteReader();
-
-            while (reader.Read())
+            using (var db = new SqlConnection(ConnectionString))
             {
-                var id = (int)reader["Id"];
-                var username = reader["Username"].ToString();
-                var password = reader["Password"].ToString();
-                var user = new User(username, password) { Id = id };
+               var rowsAffected =  db.Execute("Delete From Users Where Id = @id", new {id});
 
-                users.Add(user);
+                if (rowsAffected != 1)
+                {
+                    throw new Exception("That didn't work out.");
+                }
             }
+        }
 
-            connection.Close();
+        public User UpdateUser(User userToUpdate)
+        {
+            using (var db = new SqlConnection(ConnectionString))
+            {
+                var rowsAffected = db.Execute(@"Update Users
+                             Set username = @username,
+                                 password = @password
+                             Where Id = @id", userToUpdate);
 
-            return users;
+                if (rowsAffected == 1)
+                    return userToUpdate;
+            }
+            throw new Exception("Could not update user");
+        }
+
+        public IEnumerable<User> GetAll()
+        {
+            using (var db = new SqlConnection(ConnectionString))
+            {
+                db.Open();
+
+                return db.Query<User>("select username,password,id from users");
+            }
         }
     }
 }
