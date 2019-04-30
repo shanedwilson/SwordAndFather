@@ -14,32 +14,20 @@ namespace SwordAndFather.Data
 
         public User AddUser(string username, string password)
         {
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var db = new SqlConnection(ConnectionString))
             {
-                connection.Open();
-                var insertUserCommand = connection.CreateCommand();
-                insertUserCommand.CommandText = $@"Insert into users (username, password)
-                                              Output inserted.*
-                                              Values(@username, @password)";
+                var newUser = db.QueryFirstOrDefault<User>(@"
+                    Insert into users (username, password)
+                    Output inserted.*
+                    Values(@username, @password)", 
+                    new {username, password });
 
-                insertUserCommand.Parameters.AddWithValue("username", username);
-                insertUserCommand.Parameters.AddWithValue("password", password);
-
-                var reader = insertUserCommand.ExecuteReader();
-
-                if (reader.Read())
+                if (newUser != null)
                 {
-                    var insertedPassword = reader["password"].ToString();
-                    var insertedUserName = reader["username"].ToString();
-                    var insertedId = (int)reader["Id"];
-
-                    var newUser = new User(insertedUserName, insertedPassword) { Id = insertedId };
-
                     return newUser;
                 }
             }
-
-            throw new Exception("No user found");
+            throw new Exception("No user created");
         }
 
         public IEnumerable<User> GetAll()
