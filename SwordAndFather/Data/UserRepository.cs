@@ -44,8 +44,6 @@ namespace SwordAndFather.Data
 
         public IEnumerable<User> GetAll()
         {
-            //var users = new List<User>();
-
             using (var db = new SqlConnection(ConnectionString))
             {
                 db.Open();
