@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using Dapper;
+using System.Linq;
 
 namespace SwordAndFather.Data
 {
@@ -62,7 +63,16 @@ namespace SwordAndFather.Data
             {
                 db.Open();
 
-                return db.Query<User>("select username,password,id from users");
+                var users = db.Query<User>("select username,password,id from users").ToList();
+
+                var targets = new TargetRepository().GetAll();
+
+                foreach(var user in users)
+                {
+                    user.Targets = targets.Where(target => target.UserId == user.Id).ToList();
+                }
+
+                return users;
             }
         }
     }

@@ -13,6 +13,13 @@ namespace SwordAndFather.Controllers
     [ApiController]
     public class TargetController : ControllerBase
     {
+        readonly TargetRepository _targetRepository;
+
+        public TargetController()
+        {
+            _targetRepository = new TargetRepository();
+        }
+
         [HttpPost]
         public ActionResult AddTarget(CreateTargetRequest createRequest)
         {
@@ -25,6 +32,14 @@ namespace SwordAndFather.Controllers
                 createRequest.UserId);
 
             return Created($"api/target/{newTarget.Id}", newTarget);
+        }
+
+        [HttpGet]
+        public ActionResult GetAll()
+        {
+            var targets = _targetRepository.GetAll();
+
+            return Ok(targets);
         }
     }
 }

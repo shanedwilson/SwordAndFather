@@ -8,6 +8,7 @@ namespace SwordAndFather.Models
     public class Target
     {
         public int Id { get; set; }
+        public string Name { get; set; }
         public string Location { get; set; }
         public FitnessLevel FitnessLevel { get; set; }
         public int Age { get; set; }
