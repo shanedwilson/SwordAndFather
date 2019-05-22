@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SwordAndFather.Data;
 
 namespace SwordAndFather
 {
@@ -26,6 +27,13 @@ namespace SwordAndFather
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.Configure<DbConfiguration>(Configuration);
+
+            services.AddTransient<TargetRepository>();
+            services.AddTransient<UserRepository>();
+
+            //services.AddTransient<ITargetRepository>(builder => builder.GetService<StubTargetRepository>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,11 +45,17 @@ namespace SwordAndFather
             }
             else
             {
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseMvc();
         }
+    }
+
+    public class DbConfiguration
+    {
+        public string ConnectionString { get; set; }
     }
 }
