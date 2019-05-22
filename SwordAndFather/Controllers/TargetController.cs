@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SwordAndFather.Data;
 using SwordAndFather.Models;
 
@@ -13,33 +14,23 @@ namespace SwordAndFather.Controllers
     [ApiController]
     public class TargetController : ControllerBase
     {
-        readonly TargetRepository _targetRepository;
+        readonly ITargetRepository _repo;
 
-        public TargetController()
+        public TargetController(ITargetRepository repo)
         {
-            _targetRepository = new TargetRepository();
+            _repo = repo;
         }
 
         [HttpPost]
         public ActionResult AddTarget(CreateTargetRequest createRequest)
         {
-            var repository = new TargetRepository();
-
-            var newTarget = repository.AddTarget(
+            var newTarget = _repo.AddTarget(
                 createRequest.Name,
                 createRequest.Location,
                 createRequest.FitnessLevel,
                 createRequest.UserId);
 
-            return Created($"api/target/{newTarget.Id}", newTarget);
-        }
-
-        [HttpGet]
-        public ActionResult GetAll()
-        {
-            var targets = _targetRepository.GetAll();
-
-            return Ok(targets);
+            return Created($"/api/target/{newTarget.Id}", newTarget);
         }
     }
 }
